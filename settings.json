@@ -1,0 +1,53 @@
+{
+    "resolution": [
+        1366,
+        768
+    ],
+    "fullscreen": false,
+    "controller_config": {
+        "steering": {
+            "type": "axis",
+            "id": 0
+        },
+        "acceleration": {
+            "type": "axis",
+            "id": 1
+        },
+        "breaking": {
+            "type": "axis",
+            "id": 2
+        },
+        "shift_up": {
+            "type": "button",
+            "id": 8
+        },
+        "shift_down": {
+            "type": "button",
+            "id": 9
+        },
+        "horn": {
+            "type": "button",
+            "id": 5
+        },
+        "lights": {
+            "type": "button",
+            "id": 3
+        },
+        "throttle": {
+            "type": "axis",
+            "id": 1
+        },
+        "brake": {
+            "type": "axis",
+            "id": 2
+        }
+    },
+    "axis_inversion": {
+        "steering": false,
+        "acceleration": true,
+        "breaking": true,
+        "throttle": true,
+        "brake": true
+    },
+    "selected_controller_index": 0
+}
