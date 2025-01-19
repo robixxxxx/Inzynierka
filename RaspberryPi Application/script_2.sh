@@ -21,6 +21,8 @@ apt install hostapd
 apt install dnsmasq
 apt install iw
 apt install network-manager
+apt install pigpiod
+
 
 sudo pip install flask
 sudo pip install smbus2
