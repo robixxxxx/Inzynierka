@@ -30,6 +30,8 @@ sudo pip install picamera2
 echo "Set device name"
 read device_name
 
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+
 if [[ ! "$device_name" =~ ^[a-zA-Z0-9-]+$ || "$device_name" =~ ^- || "$device_name" =~ -$ ]]; then
   echo "Invalid hostname. It must consist of letters, numbers, and hyphens, and cannot start or end with a hyphen."
   exit 1
