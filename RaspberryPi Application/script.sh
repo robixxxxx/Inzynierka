@@ -88,6 +88,8 @@ echo "Copying necessary files and folders from /etc..."
 cp -r "$SCRIPT_DIR/etc/hostapd" /etc/
 cp -r "$SCRIPT_DIR/etc/dnsmasq.conf" /etc/
 
+chmod +x "$SCRIPT_DIR/app.py"
+
 # Create systemd service file
 SERVICE_FILE="/etc/systemd/system/raspberrypi_app.service"
 echo "Creating systemd service file at $SERVICE_FILE"
