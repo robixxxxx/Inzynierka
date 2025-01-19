@@ -312,7 +312,7 @@ class RaspberryPiServer:
         """Sprawdza, czy Raspberry Pi jest podłączone do Wi-Fi."""
         try:
             result = subprocess.run(['nmcli', '-t', '-f', 'ACTIVE', 'con'], capture_output=True, text=True)
-            return "yes" in result.stdout  # Jeśli aktywne połączenie istnieje
+            return "yes:802-11-wireless" in result.stdout  # Jeśli aktywne połączenie istnieje
         except Exception as e:
             print(f"Error checking WiFi connection: {e}")
             return False
