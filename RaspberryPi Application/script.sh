@@ -8,13 +8,15 @@ fi
 systemctl daemon-reload
 #Enable i2c bus
 raspi-config nonint do_i2c 0
+# Enable camera
+raspi-config nonint do_camera 0
 
 # Get the directory of the script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 echo "Script directory: $SCRIPT_DIR"
-# Unlock filesystem
-echo "Unlocking filesystem..."
-mount -o remount,rw /
+# Disable Overlay File System
+echo "Disabling Overlay File System..."
+raspi-config nonint disable_overlayfs
 
 echo "Updating package lists..."
 apt-get update
@@ -103,8 +105,8 @@ systemctl daemon-reload
 systemctl enable raspberrypi_app.service
 systemctl start raspberrypi_app.service
 
-# Lock filesystem
-echo "Locking filesystem..."
-mount -o remount,ro,lazy /
+# Enable Overlay File System
+echo "Enabling Overlay File System..."
+raspi-config nonint enable_overlayfs
 
 echo "Setup complete. The application will start on boot."
