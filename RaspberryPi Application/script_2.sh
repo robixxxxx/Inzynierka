@@ -83,5 +83,8 @@ systemctl daemon-reload
 systemctl enable raspberrypi_app.service
 systemctl start raspberrypi_app.service
 
+systemctl enable pigpiod
+systemctl start pigpiod
+
 echo "Konfiguracja raspi-config dla NetworkManager..."
 raspi-config nonint do_netconf 2
