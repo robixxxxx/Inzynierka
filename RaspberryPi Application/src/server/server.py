@@ -373,6 +373,7 @@ class RaspberryPiServer:
     def wifi_connect(self):
         """Łączy się z wybraną siecią Wi-Fi."""
         try:
+            os.system('raspi-config nonint disable_overlayfs')
             data = request.get_json()
             ssid = data.get('ssid')
             password = data.get('password')
@@ -386,3 +387,5 @@ class RaspberryPiServer:
             return jsonify({"error": f"Failed to connect to network: {str(e)}"})
         except Exception as e:
             return jsonify({"error": f"Unexpected error: {str(e)}"})
+        finally:
+            os.system('raspi-config nonint enable_overlayfs')
