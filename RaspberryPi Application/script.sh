@@ -41,14 +41,11 @@ apt-get clean
 rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-echo "Upgrading pip..."
-if ! command -v pip3 &>/dev/null; then
-    echo "pip3 not found. Installing..."
-    apt-get install -y python3-pip
-fi
+sudo apt install python3 -y
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python3 get-pip.py
 
-python3 -m pip install --upgrade pip
-
+# Check if requirements.txt exists
 if [ ! -f "$SCRIPT_DIR/requirements.txt" ]; then
   echo "Error: requirements.txt not found in $SCRIPT_DIR."
   exit 1
