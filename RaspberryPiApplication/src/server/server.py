@@ -75,11 +75,10 @@ class RaspberryPiServer:
         self.telemetry_thread.start()
         self.html_dir = os.path.join(os.path.dirname(__file__), 'src/html')
         self.app = Flask(__name__)
-        self.app.add_url_rule('/', 'index', self.index)
         self.app.add_url_rule('/video', 'video', self.video)
-        self.app.add_url_rule('/wifi', 'wifi_page', self.wifi_page, methods=['GET'])
-        self.app.add_url_rule('/wifi/scan', 'wifi_scan', self.wifi_scan, methods=['GET'])
-        self.app.add_url_rule('/wifi/connect', 'wifi_connect', self.wifi_connect, methods=['POST'])
+        self.app.add_url_rule('/', 'wifi_page', self.wifi_page, methods=['GET'])
+        self.app.add_url_rule('/scan', 'wifi_scan', self.wifi_scan, methods=['GET'])
+        self.app.add_url_rule('/connect', 'wifi_connect', self.wifi_connect, methods=['POST'])
 
     def _telemetry_loop(self):
         while self.running:

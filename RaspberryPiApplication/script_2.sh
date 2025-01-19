@@ -51,7 +51,7 @@ if [[ ! "$device_name" =~ ^[a-zA-Z0-9-]+$ || "$device_name" =~ ^- || "$device_na
 fi
 
 sed -i 's/"name": "RaspberryPiControlServer"/"name": "'"$device_name"'"/' "$SERVER_FILE"
-sed -i 's/^ssid=.*/ssid='"$device_name"'/' "$HOSTAPD_FILE"
+sed -i 's/^ssid=RaspberryPiAP/ssid='"$device_name"'/' "$HOSTAPD_FILE"
 
 chmod +x "$SCRIPT_DIR/app.py"
 
@@ -75,8 +75,8 @@ WantedBy=multi-user.target
 EOL
 
 echo "Copying necessary files and folders from /etc..."
-cp -r "$SCRIPT_DIR/etc/hostapd" /etc/hostapd
-cp -r "$SCRIPT_DIR/etc/dnsmasq.conf" /etc/
+sudo cp -r "$SCRIPT_DIR/etc/hostapd" /etc/hostapd
+sudo cp -r "$SCRIPT_DIR/etc/dnsmasq.conf" /etc/
 
 echo "Reloading systemd, enabling and starting the service"
 systemctl daemon-reload
