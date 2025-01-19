@@ -19,7 +19,7 @@ echo "Disabling Overlay File System..."
 raspi-config nonint disable_overlayfs
 
 echo "Updating package lists..."
-apt-get update
+apt-get update --fix-missing
 
 echo "Installing required packages..."
 apt-get install -y \
@@ -43,8 +43,8 @@ rm -rf /var/lib/apt/lists/*
 # Install Python dependencies
 sudo apt install python3 -y
 wget https://bootstrap.pypa.io/get-pip.py
-sudo python3 get-pip.py
-
+python3 get-pip.py
+rm get-pip.py
 # Check if requirements.txt exists
 if [ ! -f "$SCRIPT_DIR/requirements.txt" ]; then
   echo "Error: requirements.txt not found in $SCRIPT_DIR."
