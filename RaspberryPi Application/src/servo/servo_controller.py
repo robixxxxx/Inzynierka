@@ -8,7 +8,7 @@ pi.set_mode(SERVO_PIN, pigpio.OUTPUT)
 class ServoController:
     def __init__(self, pin=SERVO_PIN):
         self.pin = pin
-        os.system("pigpio.pi('soft', 8888)")
+        os.system("pigpiod")
 
     def set_angle(self, angle):
         pulse = 1500 + (angle / 180.0) * 600
