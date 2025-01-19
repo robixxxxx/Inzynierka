@@ -40,6 +40,10 @@ echo "Cleaning up..."
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
+echo "Installing Python 3..."
+apt-get install -y python3 python3-pip
+
 echo "Upgrading pip..."
 /usr/bin/python /usr/bin/pip install --upgrade pip
 
