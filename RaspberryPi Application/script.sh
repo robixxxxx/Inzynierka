@@ -99,7 +99,7 @@ Description=Raspberry Pi Application
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 $SCRIPT_DIR/app.py
+ExecStart=python3 $SCRIPT_DIR/app.py
 WorkingDirectory=$SCRIPT_DIR
 StandardOutput=file:/var/log/raspberrypi_app.log
 StandardError=file:/var/log/raspberrypi_app.log
