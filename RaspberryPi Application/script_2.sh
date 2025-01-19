@@ -31,6 +31,17 @@ echo "Set device name"
 read device_name
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
+echo "Script directory: $SCRIPT_DIR"
+SERVER_FILE="$SCRIPT_DIR/src/server/server.py"
+if [ ! -f "$SERVER_FILE" ]; then
+  echo "Error: File '$SERVER_FILE' not found."
+  exit 1
+fi
+HOSTAPD_FILE="$SCRIPT_DIR/etc/hostapd/hostapd.conf"
+if [ ! -f "$HOSTAPD_FILE" ]; then
+  echo "Error: File '$HOSTAPD_FILE' not found."
+  exit 1
+fi
 
 if [[ ! "$device_name" =~ ^[a-zA-Z0-9-]+$ || "$device_name" =~ ^- || "$device_name" =~ -$ ]]; then
   echo "Invalid hostname. It must consist of letters, numbers, and hyphens, and cannot start or end with a hyphen."
