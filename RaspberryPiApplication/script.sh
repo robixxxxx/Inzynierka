@@ -41,7 +41,8 @@ apt-get clean
 rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-sudo apt install python3 -y
+apt install python3 -y
+apt install python3-distutils
 wget https://bootstrap.pypa.io/get-pip.py
 python3 get-pip.py
 rm get-pip.py
@@ -52,6 +53,7 @@ if [ ! -f "$SCRIPT_DIR/requirements.txt" ]; then
 fi
 
 echo "Installing Python dependencies from requirements.txt..."
+sudo pip i
 python3 -m pip install --break-system-packages --no-cache-dir -r "$SCRIPT_DIR/requirements.txt"
 
 
@@ -109,6 +111,60 @@ User=pi
 [Install]
 WantedBy=multi-user.target
 EOL
+
+
+# Configure and activate hotspot using NetworkManager
+echo "Configuring NetworkManager for hotspot..."
+nmcli con add type wifi ifname wlan0 con-name hotspot autoconnect no ssid $device_name
+nmcli con modify hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+nmcli con modify hotspot 802-11-wireless-security.key-mgmt none
+
+echo "Creating autohotspot script..."
+cat > /usr/local/bin/autohotspot.sh <<EOF
+#!/bin/bash
+wifi_status=\$(nmcli -t -f active,ssid dev wifi | grep '^yes' | wc -l)
+if [ "\$wifi_status" -eq 0 ]; then
+    echo "No Wi-Fi connection. Activating hotspot..."
+    nmcli con up hotspot
+else
+    echo "Wi-Fi connected. Disabling hotspot if active..."
+    nmcli con down hotspot
+fi
+EOF
+chmod +x /usr/local/bin/autohotspot.sh
+
+# Configure systemd service for autohotspot
+echo "Creating systemd service for autohotspot..."
+cat > /etc/systemd/system/autohotspot.service <<EOF
+[Unit]
+Description=Auto Hotspot Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/autohotspot.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "Enabling autohotspot service..."
+systemctl enable autohotspot.service
+systemctl start autohotspot.service
+
+# Wyłącz dhcpcd
+echo "Wyłączanie dhcpcd..."
+systemctl stop dhcpcd
+systemctl disable dhcpcd
+
+# Włącz NetworkManager
+echo "Włączanie NetworkManager..."
+systemctl enable NetworkManager
+systemctl start NetworkManager
+
+# Skonfiguruj raspi-config, aby preferować NetworkManager
+echo "Konfiguracja raspi-config dla NetworkManager..."
+raspi-config nonint do_netconf 2
 
 # Reload systemd, enable and start the service
 echo "Reloading systemd, enabling and starting the service"
