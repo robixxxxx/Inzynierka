@@ -41,19 +41,22 @@ apt-get clean
 rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-# echo "Installing Python 3..."
-# apt-get install -y python3 python3-pip
 echo "Upgrading pip..."
+if ! command -v pip3 &>/dev/null; then
+    echo "pip3 not found. Installing..."
+    apt-get install -y python3-pip
+fi
+
 python3 -m pip install --upgrade pip
-# /usr/bin/python /usr/bin/pip install --upgrade pip
 
 if [ ! -f "$SCRIPT_DIR/requirements.txt" ]; then
-  echo "Error: requirements.txt not found in the current directory."
+  echo "Error: requirements.txt not found in $SCRIPT_DIR."
   exit 1
 fi
 
 echo "Installing Python dependencies from requirements.txt..."
-/usr/bin/python /usr/bin/pip install --break-system-packages --no-cache-dir -r "$SCRIPT_DIR/requirements.txt"
+python3 -m pip install --break-system-packages --no-cache-dir -r "$SCRIPT_DIR/requirements.txt"
+
 
 echo "Python dependencies installed successfully."
 
