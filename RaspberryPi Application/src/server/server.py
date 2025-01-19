@@ -15,7 +15,7 @@ from src.sensors.pcf8574 import PCF8574IOExpander
 from src.motor.l9110s import L9110SMotorDriver
 from src.servo.servo_controller import ServoController
 from src.camera.camera import Camera
-from src.camera.video_sender import VideoSender
+
 
 BROADCAST_PORT = 50000
 CONTROL_PORT = 12345
@@ -38,7 +38,7 @@ class RaspberryPiServer:
             self.io_expander = PCF8574IOExpander()
             self.motor = L9110SMotorDriver()
             self.servo = ServoController()
-            self.camera = VideoSender()#Camera()
+            self.camera = Camera()
             self.speed_sensor = SpeedSensor()
         except Exception as e:
             print(f"Error initializing sensors or controllers: {e}")
@@ -72,13 +72,11 @@ class RaspberryPiServer:
         self.running = True
 
         self.telemetry_thread = threading.Thread(target=self._telemetry_loop, daemon=True)
-        self.camera_thread = threading.Thread(target=self.camera.send_video, daemon=True)
         self.telemetry_thread.start()
-        self.camera_thread.start()
         self.html_dir = os.path.join(os.path.dirname(__file__), 'src/html')
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'index', self.index)
-        # self.app.add_url_rule('/video', 'video', self.video)
+        self.app.add_url_rule('/video', 'video', self.video)
         self.app.add_url_rule('/wifi', 'wifi_page', self.wifi_page, methods=['GET'])
         self.app.add_url_rule('/wifi/scan', 'wifi_scan', self.wifi_scan, methods=['GET'])
         self.app.add_url_rule('/wifi/connect', 'wifi_connect', self.wifi_connect, methods=['POST'])
@@ -284,11 +282,19 @@ class RaspberryPiServer:
     def index(self):
         return send_from_directory(self.html_dir, 'index.html')
 
-    # def video(self):
-    #     return Response(self.camera.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    def video(self):
+        return Response(self.camera.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     def favicon(self):
         return Response(status=204)
+
+    def unlock_filesystem(self):
+        print("Unlocking filesystem...")
+        os.system("mount -o remount,rw /")
+
+    def lock_filesystem(self):
+        print("Locking filesystem...")
+        os.system("mount -o remount,ro /")
 
     def monitor_network(self):
         """Monitoruje połączenie Wi-Fi i przełącza w tryb AP, jeśli nie ma połączenia."""
@@ -375,24 +381,8 @@ class RaspberryPiServer:
                 subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid, 'password', password], check=True)
             else:
                 subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid], check=True)
-
             return jsonify({"message": f"Connected to {ssid}"})
         except subprocess.CalledProcessError as e:
             return jsonify({"error": f"Failed to connect to network: {str(e)}"})
         except Exception as e:
             return jsonify({"error": f"Unexpected error: {str(e)}"})
-
-    def index(self):
-        return """
-        <html>
-            <head>
-                <title>Raspberry Pi Management</title>
-            </head>
-            <body>
-                <h1>Welcome to Raspberry Pi Server</h1>
-                <ul>
-                    <li><a href="/wifi">Manage WiFi</a></li>
-                </ul>
-            </body>
-        </html>
-        """
