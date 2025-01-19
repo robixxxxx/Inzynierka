@@ -64,16 +64,21 @@ if [[ ! "$device_name" =~ ^[a-zA-Z0-9-]+$ || "$device_name" =~ ^- || "$device_na
 fi
 
 # Ensure the file exists
-FILE="$SCRIPT_DIR/src/server/server.py"
-if [ ! -f "$FILE" ]; then
-  echo "Error: File '$FILE' not found."
+SERVER_FILE="$SCRIPT_DIR/src/server/server.py"
+if [ ! -f "$SERVER_FILE" ]; then
+  echo "Error: File '$SERVER_FILE' not found."
+  exit 1
+fi
+HOSTAPD_FILE="$SCRIPT_DIR/etc/hostapd/hostapd.conf"
+if [ ! -f "$HOSTAPD_FILE" ]; then
+  echo "Error: File '$HOSTAPD_FILE' not found."
   exit 1
 fi
 
 # Use sed to replace the value of the name element
 echo "Updating device name"
-sed -i 's/"name": "RaspberryPiControlServer"/"name": "'"$device_name"'"/' "$FILE"
-
+sed -i 's/"name": "RaspberryPiControlServer"/"name": "'"$device_name"'"/' "$SERVER_FILE"
+sed -i 's/^ssid=.*/ssid='"$device_name"'/' "$HOSTAPD_FILE"
 # Copy necessary files and folders from /etc
 echo "Copying necessary files and folders from /etc..."
 cp -r "$SCRIPT_DIR/etc/hostapd" /etc/
