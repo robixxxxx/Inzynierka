@@ -1,5 +1,0 @@
-pygame
-smbus2
-RPi.GPIO
-pigpio
-pyyaml

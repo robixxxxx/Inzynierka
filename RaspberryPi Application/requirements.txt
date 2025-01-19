@@ -1,5 +1,3 @@
-av==14.0.0
-flask
 picamera2
 Pillow
 smbus2
