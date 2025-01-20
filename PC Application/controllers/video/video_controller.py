@@ -1,7 +1,7 @@
 import pygame
 import cv2
 import numpy as np
-import requests
+# import requests
 import threading
 import queue
 import os
@@ -19,7 +19,7 @@ class VideoController:
         self.capture = cv2.VideoCapture(self.stream_url)
         self.running = False
         self.frame_queue = queue.Queue(maxsize=5)
-        self.speed = 0  # Initialize speed to 0
+        self.speed = 0.0
         self.voltage = 0.0
         self.current = 0.0
         self.wifi_signal_strength = 0
@@ -55,20 +55,6 @@ class VideoController:
                 if self.frame_queue.full():
                     self.frame_queue.get()
                 self.frame_queue.put(frame)
-        # bytes_buffer = b''
-        # stream = requests.get(self.stream_url, stream=True)
-        # while self.running:
-        #     bytes_buffer += stream.raw.read(2048)
-        #     start = bytes_buffer.find(b'\xff\xd8')
-        #     end = bytes_buffer.find(b'\xff\xd9')
-        #     if start != -1 and end != -1:
-        #         jpg = bytes_buffer[start:end + 2]
-        #         bytes_buffer = bytes_buffer[end + 2:]
-        #         frame = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-        #         if frame is not None:
-        #             if self.frame_queue.full():
-        #                 self.frame_queue.get()
-        #             self.frame_queue.put(frame)
 
     def start_video_stream(self):
         self.running = True
@@ -97,7 +83,6 @@ class VideoController:
         clock = pygame.time.Clock()
     
         while self.running:
-            # Odbieranie i wyświetlanie ramki wideo
             if not self.frame_queue.empty():
                 frame = self.frame_queue.get()
                 if isinstance(frame, np.ndarray):
@@ -106,7 +91,6 @@ class VideoController:
                     frame_surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
                     self.screen.blit(frame_surface, (0, 0))
     
-            # Rysowanie telemetryki
             self.update_telemetry()
             self._draw_telemetry()
             pygame.display.flip()
@@ -192,7 +176,7 @@ class VideoController:
             return self.wifi_icons[1]
         else:
             return self.wifi_icons[0]
-        
+
     def get_battery_icon(self, voltage):
         if voltage >= 8.4:
             return self.battery_icons[6]

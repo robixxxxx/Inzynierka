@@ -17,11 +17,11 @@ apt-get update --fix-missing
 
 sudo apt install -y \
       python3-distutils \
-      install python3-pip \
-      install hostapd \
-      install dnsmasq \
-      install iw \
-      install network-manager \
+      python3-pip \
+      hostapd \
+      dnsmasq \
+      iw \
+      network-manager \
       pigpiod \
       libcap-dev \
       libopencv-dev python3-opencv \
@@ -66,7 +66,8 @@ echo "Creating systemd service file at $SERVICE_FILE"
 cat > $SERVICE_FILE <<EOL
 [Unit]
 Description=Raspberry Pi Application
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 ExecStart=sudo python3 $SCRIPT_DIR/app.py
@@ -74,6 +75,7 @@ WorkingDirectory=$SCRIPT_DIR
 StandardOutput=file:/var/log/raspberrypi_app.log
 StandardError=file:/var/log/raspberrypi_app.log
 Restart=always
+RestartSec=5
 User=pi
 
 [Install]
@@ -81,7 +83,7 @@ WantedBy=multi-user.target
 EOL
 
 echo "Copying necessary files and folders from /etc..."
-sudo cp -r "$SCRIPT_DIR/etc/hostapd" /etc/hostapd
+sudo cp -r "$SCRIPT_DIR/etc/hostapd" /etc/
 sudo cp -r "$SCRIPT_DIR/etc/dnsmasq.conf" /etc/
 
 echo "Reloading systemd, enabling and starting the service"

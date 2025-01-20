@@ -1,6 +1,0 @@
-picamera2
-Pillow
-smbus2
-RPi.GPIO
-pigpio
-flask
