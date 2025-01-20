@@ -6,7 +6,7 @@ import json
 import subprocess
 import RPi.GPIO as GPIO
 import os
-from flask import Flask, Response, request, jsonify, send_from_directory
+from flask import Flask, Response, request, jsonify, render_template_string, send_from_directory
 from src.sensors.ina3221 import INA3221Sensor
 from src.sensors.as5600 import AS5600Sensor
 from src.sensors.speed_sensor import SpeedSensor
@@ -28,18 +28,18 @@ BROADCAST_MSG = json.dumps({
 }).encode('utf-8')
 
 
-
 class RaspberryPiServer:
     def __init__(self):
+        self.app = Flask(__name__)
         try:
             self.ina = INA3221Sensor()
-            self.as5600 = AS5600Sensor()
             self.mpu6500 = MPU6500Sensor()
             self.io_expander = PCF8574IOExpander()
             self.motor = L9110SMotorDriver()
             self.servo = ServoController()
             self.camera = Camera()
             self.speed_sensor = SpeedSensor()
+            
         except Exception as e:
             print(f"Error initializing sensors or controllers: {e}")
 
@@ -73,12 +73,14 @@ class RaspberryPiServer:
 
         self.telemetry_thread = threading.Thread(target=self._telemetry_loop, daemon=True)
         self.telemetry_thread.start()
-        self.html_dir = os.path.join(os.path.dirname(__file__), 'src/html')
-        self.app = Flask(__name__)
+        self.html_dir = os.path.join(os.path.dirname(__file__), 'src/html/')
+        print(self.html_dir)
+        
+        self.app.add_url_rule('/', 'index_page', self.index, methods=['GET'])
         self.app.add_url_rule('/video', 'video', self.video)
-        self.app.add_url_rule('/', 'wifi_page', self.wifi_page, methods=['GET'])
-        self.app.add_url_rule('/scan', 'wifi_scan', self.wifi_scan, methods=['GET'])
-        self.app.add_url_rule('/connect', 'wifi_connect', self.wifi_connect, methods=['POST'])
+        self.app.add_url_rule('/wifi', 'wifi_page', self.wifi_page, methods=['GET'])
+        self.app.add_url_rule('/wifi/scan', 'wifi_scan', self.wifi_scan, methods=['GET'])
+        self.app.add_url_rule('/wifi/connect', 'wifi_connect', self.wifi_connect, methods=['POST'])
 
     def _telemetry_loop(self):
         while self.running:
@@ -277,65 +279,222 @@ class RaspberryPiServer:
         sock.bind(("0.0.0.0", port))
         sock.listen(1)
         return sock
-
     def index(self):
-        return send_from_directory(self.html_dir, 'index.html')
-
+        index_html = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Raspberry Pi Camera</title>
+            <!-- Bootstrap CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body {
+                    padding-top: 50px;
+                }
+                .camera-stream {
+                    text-align: center;
+                    margin-bottom: 2rem;
+                }
+                .camera-stream img {
+                    max-width: 100%;
+                    height: auto;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1 class="text-center mb-4">Raspberry Pi Camera Stream</h1>
+                <div class="camera-stream">
+                    <img src="/video" width="1280" height="720">
+                </div>
+                <div class="text-center">
+                    <a href="/wifi" class="btn btn-primary">Manage WiFi</a>
+                </div>
+            </div>
+            <!-- Bootstrap JS -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+        </body>
+        </html>
+        """
+        return render_template_string(index_html)
+    
     def video(self):
         return Response(self.camera.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     def favicon(self):
         return Response(status=204)
-
-    def unlock_filesystem(self):
-        print("Unlocking filesystem...")
-        os.system("mount -o remount,rw /")
-
-    def lock_filesystem(self):
-        print("Locking filesystem...")
-        os.system("mount -o remount,ro /")
-
-    def monitor_network(self):
-        """Monitoruje połączenie Wi-Fi i przełącza w tryb AP, jeśli nie ma połączenia."""
-        while self.running:
-            connected = self.check_wifi_connection()
-            if not connected:
-                print("No WiFi connection. Starting Access Point...")
-                self.start_access_point()
-            else:
-                print("Connected to WiFi. Stopping Access Point...")
-                self.stop_access_point()
-            time.sleep(10)
-
-    def check_wifi_connection(self):
-        """Sprawdza, czy Raspberry Pi jest podłączone do Wi-Fi."""
-        try:
-            result = subprocess.run(['nmcli', '-t', '-f', 'ACTIVE', 'con'], capture_output=True, text=True)
-            return "yes:802-11-wireless" in result.stdout  # Jeśli aktywne połączenie istnieje
-        except Exception as e:
-            print(f"Error checking WiFi connection: {e}")
-            return False
-
-    def start_access_point(self):
-        """Uruchamia tryb Access Point."""
-        try:
-            subprocess.run(['nmcli', 'dev', 'set', 'wlan0', 'managed', 'no'], check=True)
-            subprocess.run(['hostapd', '/etc/hostapd/hostapd.conf'], check=True)
-            print("Access Point started.")
-        except Exception as e:
-            print(f"Error starting Access Point: {e}")
-
-    def stop_access_point(self):
-        """Zatrzymuje tryb Access Point."""
-        try:
-            subprocess.run(['nmcli', 'dev', 'set', 'wlan0', 'managed', 'yes'], check=True)
-            print("Access Point stopped.")
-        except Exception as e:
-            print(f"Error stopping Access Point: {e}")
-
+    
     def wifi_page(self):
-         return send_from_directory(self.html_dir, 'wifi.html')
+        wifi_html = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>WiFi Management</title>
+            <!-- Bootstrap CSS -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body {
+                    padding-top: 50px;
+                }
+                .network-item {
+                    margin-bottom: 1rem;
+                    padding: 1rem;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .network-item:hover {
+                    background-color: #f8f9fa;
+                    border-color: #007bff;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1 class="text-center mb-4">WiFi Management</h1>
+                <div class="d-flex justify-content-between mb-4">
+                    <h2>Available Networks</h2>
+                    <button class="btn btn-primary" onclick="scanWiFi()">Scan Networks</button>
+                </div>
+                <div id="wifi-list" class="row"></div>
+                <hr>
+                <h2>Connect to a Network</h2>
+                <form id="connect-form" class="mt-3">
+                    <div class="mb-3">
+                        <label for="ssid" class="form-label">SSID:</label>
+                        <input type="text" class="form-control" id="ssid" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password">
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="connectWiFi()">Connect</button>
+                </form>
+            </div>
+        
+            <!-- Bootstrap JS -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                function scanWiFi() {
+                    fetch('/wifi/scan')
+                        .then(response => response.json())
+                        .then(data => {
+                            const wifiList = document.getElementById('wifi-list');
+                            wifiList.innerHTML = '';
+                            
+                            if (data.networks && data.networks.length > 0) {
+                                data.networks.forEach(network => {
+                                    const networkHTML = `
+                                        <div class="col-md-4">
+                                            <div class="network-item" onclick="selectNetwork('${network.SSID}')">
+                                                <h5>${network.SSID || "Hidden"}</h5>
+                                                <p><strong>Signal:</strong> ${network.Signal}%</p>
+                                                <p><strong>Bars:</strong> ${network.Bars}</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                    wifiList.innerHTML += networkHTML;
+                                });
+                            } else {
+                                wifiList.innerHTML = '<p class="text-muted">No networks found.</p>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error scanning WiFi:', error);
+                            alert('Error scanning WiFi. Check the console for more details.');
+                        });
+                }
+        
+                function selectNetwork(ssid) {
+                    document.getElementById('ssid').value = ssid;
+                }
+        
+                function connectWiFi() {
+                    const ssid = document.getElementById('ssid').value;
+                    const password = document.getElementById('password').value;
+                    fetch('/wifi/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ssid, password })
+                    }).then(response => response.json())
+                      .then(data => {
+                          alert(data.message || data.error);
+                      })
+                      .catch(error => {
+                          console.error('Error connecting to WiFi:', error);
+                          alert('Error connecting to WiFi. Check the console for more details.');
+                      });
+                }
+            </script>
+        </body>
+        </html>
+        """
+        return render_template_string(wifi_html)
+    
+    def _wifi_scan(self):
+        """Skanuje dostępne sieci Wi-Fi."""
+        try:
+            
+            subprocess.run(['nmcli', 'dev', 'wifi', 'rescan'], check=True)
 
+            # Pobranie listy sieci
+            result = subprocess.run(['nmcli', '-t', '-f', 'SSID,SIGNAL,BARS', 'dev', 'wifi'], capture_output=True, text=True)
+
+            # Podział wyniku na linie
+            networks = []
+            for line in result.stdout.strip().split('\n'):
+                parts = line.split(':')
+                if len(parts) >= 3:  # Upewnij się, że wszystkie pola istnieją
+                    ssid, signal, bars = parts[0], parts[1], parts[2]
+                    networks.append({
+                        "SSID": ssid if ssid else "Hidden",
+                        "Signal": signal,
+                        "Bars": bars
+                    })
+
+            # Jeśli brak sieci, zwróć informację
+            if not networks:
+                return jsonify({"message": "No networks found."})
+
+            return jsonify({"networks": networks})
+        except Exception as e:
+            return jsonify({"error": f"Error scanning networks: {str(e)}"})
+
+    def _wifi_connect(self):
+        """Łączy się z wybraną siecią Wi-Fi."""
+        try:
+            os.system('raspi-config nonint disable_overlayfs')
+            data = request.get_json()
+            ssid = data.get('ssid')
+            password = data.get('password')
+
+            if not ssid:
+                return jsonify({"error": "SSID is required"}), 400
+
+            if password:
+                result = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid, 'password', password], capture_output=True, text=True)
+            else:
+                result = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid], capture_output=True, text=True)
+
+            if result.returncode == 0:
+                return jsonify({"message": f"Connected to {ssid}"})
+            else:
+                return jsonify({"error": f"Failed to connect to network: {result.stderr}"}), 500
+
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to connect to network: {str(e)}"}), 500
+        except Exception as e:
+            return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+        
     def wifi_scan(self):
         """Skanuje dostępne sieci Wi-Fi."""
         try:
@@ -368,7 +527,6 @@ class RaspberryPiServer:
         except Exception as e:
             return jsonify({"error": f"Error scanning networks: {str(e)}"})
 
-
     def wifi_connect(self):
         """Łączy się z wybraną siecią Wi-Fi."""
         try:
@@ -377,14 +535,20 @@ class RaspberryPiServer:
             ssid = data.get('ssid')
             password = data.get('password')
 
+            if not ssid:
+                return jsonify({"error": "SSID is required"}), 400
+
             if password:
-                subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid, 'password', password], check=True)
+                result = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid, 'password', password], capture_output=True, text=True)
             else:
-                subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid], check=True)
-            return jsonify({"message": f"Connected to {ssid}"})
+                result = subprocess.run(['nmcli', 'dev', 'wifi', 'connect', ssid], capture_output=True, text=True)
+
+            if result.returncode == 0:
+                return jsonify({"message": f"Connected to {ssid}"})
+            else:
+                return jsonify({"error": f"Failed to connect to network: {result.stderr}"}), 500
+
         except subprocess.CalledProcessError as e:
-            return jsonify({"error": f"Failed to connect to network: {str(e)}"})
+            return jsonify({"error": f"Failed to connect to network: {str(e)}"}), 500
         except Exception as e:
-            return jsonify({"error": f"Unexpected error: {str(e)}"})
-        finally:
-            os.system('raspi-config nonint enable_overlayfs')
+            return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
