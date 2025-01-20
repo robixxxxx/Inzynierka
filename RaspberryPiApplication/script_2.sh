@@ -15,19 +15,25 @@ echo "Updating package lists..."
 apt-get update
 apt-get update --fix-missing
 
-sudo apt install python3-distutils
-apt install python3-pip
-apt install hostapd
-apt install dnsmasq
-apt install iw
-apt install network-manager
-apt install pigpiod
-
+sudo apt install -y \
+      python3-distutils \
+      install python3-pip \
+      install hostapd \
+      install dnsmasq \
+      install iw \
+      install network-manager \
+      pigpiod \
+      libcap-dev \
+      libopencv-dev python3-opencv \
+      libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev libswscale-dev libswresample-dev \
+      pkg-config libjpeg-dev zlib1g-dev \
 
 sudo pip install flask
 sudo pip install smbus2
 sudo pip install pigpio
 sudo pip install picamera2
+
+
 
 echo "Set device name"
 read device_name
