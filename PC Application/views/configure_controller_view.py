@@ -24,11 +24,10 @@ class ConfigureControllerView:
     ):
         self.screen.fill(self.background_color)
         width, height = self.screen.get_size()
-        scale = height / 768  # Assuming 768 is the base height for scaling
+        scale = height / 768
 
-        # Calculate the spacing based on the font size
         text_height = self.font.size("Tg")[1]
-        spacing = text_height + 10 * scale  # Add some extra spacing
+        spacing = text_height + 10 * scale
 
         y_offset = 50
         for i, function in enumerate(functions):
@@ -77,7 +76,7 @@ class ConfigureControllerView:
         text = self.font.render(exit_text, True, color)
         self.screen.blit(text, (50, y_offset))
 
-        # Jeśli aktualnie czekamy na wciśnięcie przycisku lub poruszenie osią
+        # If waiting for button/axis press
         if is_setting_function:
             info_text = self.font.render("Naciśnij przycisk / porusz osią / hat na kontrolerze...", True, (255,255,255))
             self.screen.blit(info_text, (50, y_offset+spacing))
@@ -88,7 +87,6 @@ class ConfigureControllerView:
         pygame.display.flip()
 
     def draw_axis_visualizations(self, axis_values):
-        """Draws visualizations for the steering, throttle, and brake axes."""
         width, height = self.screen.get_size()
         center_x = width // 2
         center_y = height // 2

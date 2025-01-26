@@ -7,7 +7,7 @@ def initialize_pygame(settings_manager):
     pygame.display.set_caption("Your Game Title")
     flag = pygame.FULLSCREEN if fullscreen else 0
     screen = pygame.display.set_mode(resolution, flag)
-    base_font_size = 36  # Base font size for a reference height (e.g., 768)
+    base_font_size = 36
     screen_width, screen_height = screen.get_size()
     scale_factor = screen_height / 768
     font_size = int(base_font_size * scale_factor)

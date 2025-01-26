@@ -10,14 +10,13 @@ class DeviceListView:
         self.highlight_color = RAL5014
 
     def render(self, devices, selected_index):
-        """Renderuje listę urządzeń na ekranie."""
-        self.screen.fill(self.background_color)  # Czyszczenie ekranu
+        self.screen.fill(self.background_color)
         width, height = self.screen.get_size()
-        scale = height / 768  # Assuming 768 is the base height for scaling
+        scale = height / 768
 
         # Calculate the spacing based on the font size
         text_height = self.font.size("Tg")[1]
-        spacing = text_height + 10 * scale  # Add some extra spacing
+        spacing = text_height + 10 * scale
 
         if not devices:
             text_surface = self.font.render("Searching for devices...", True, self.text_color)
