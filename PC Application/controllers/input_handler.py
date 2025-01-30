@@ -1,7 +1,7 @@
 import pygame
 import struct
 from models.control_data_model import ControlDataModel
-from models.settings_manager import SettingsManager
+from controllers.settings_manager import SettingsManager
 
 class InputHandler:
     def __init__(self, settings_manager: SettingsManager, control_data_model: ControlDataModel):
@@ -137,25 +137,12 @@ class InputHandler:
 
         self.control_data.update(steering, throttle, brake, gear, buttons)
 
-    # def process_control_data(self, control_data):
-    #     # Update direction based on shift buttons
-
-
-    #     command_type = self.control_data.gear
-    #     steering = max(-128, min(127, int(self.control_data.steering * 15)))
-    #     gas = int(self.control_data.throttle * 100) if self.control_data.throttle > 0 else 0
-    #     brake = int(self.control_data.brake * 100) if self.control_data.brake > 0 else 0
-    #     buttons = sum(1 << i for i, pressed in enumerate(self.control_data.buttons) if pressed)
-
-    #     # Pack control data into 5 bytes
-    #     try:
-    #         packed_data = struct.pack("bbBBB", command_type, steering, gas, brake, buttons)
-    #         return packed_data
-    #     except struct.error as e:
-    #         print(f"Error packing control data: {e}")
-    #         return None
-
     def get_axis_value(self, axis_name):
-        if self.joystick and axis_name in self.controller_config:
-            return self.joystick.get_axis(self.controller_config[axis_name]["id"])
-        return 0.0
+        try:
+            if self.joystick and axis_name in self.controller_config:
+                return self.joystick.get_axis(self.controller_config[axis_name]["id"])
+            return 0.0
+        except Exception as e:
+            print(f"Warning: exception error {e}")
+            return 0.0
+        

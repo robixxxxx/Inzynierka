@@ -2,14 +2,15 @@ import pygame
 from models.settings_model import Settings
 from controllers.configure_controller import ConfigureControllerController
 from utils import initialize_pygame
-from views.settings_view import SettingsView
+from views.menu_view import MenuView
+# from views.settings_view import SettingsView
 
 class SettingsController:
     def __init__(self, screen, font, settings_manager: Settings):
         self.screen = screen
         self.font = font
         self.settings_manager = settings_manager
-        self.settings_view = SettingsView(screen, font)
+        self.settings_view = MenuView(screen, font)
         self.setting_descriptions = {
             "resolution": "Resolution",
             "fullscreen": "Fullscreen",

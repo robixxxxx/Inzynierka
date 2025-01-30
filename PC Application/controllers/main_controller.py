@@ -15,7 +15,7 @@ class MainController:
 
     def run(self):
         while True:
-            self.menu_view.render_menu(self.menu_items, self.selected_index)
+            self.menu_view.render(self.menu_items, self.selected_index)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()

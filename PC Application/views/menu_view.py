@@ -9,14 +9,13 @@ class MenuView:
         self.text_color = BLACK
         self.highlight_color = RAL5014
 
-    def render_menu(self, menu_items, selected_index):
+    def render(self, menu_items, selected_index):
         self.screen.fill(self.background_color)
         width, height = self.screen.get_size()
-        scale = height / 768  # Assuming 768 is the base height for scaling
+        scale = height / 768 
 
-        # Calculate the spacing based on the font size
         text_height = self.font.size("Tg")[1]
-        spacing = text_height + 10 * scale  # Add some extra spacing
+        spacing = text_height + 10 * scale
 
         for i, item in enumerate(menu_items):
             color = self.highlight_color if i == selected_index else self.text_color
