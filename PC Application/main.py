@@ -1,5 +1,5 @@
 from controllers.main_controller import MainController
-from models.settings_manager import SettingsManager
+from controllers.settings_manager import SettingsManager
 from utils import initialize_pygame
 
 

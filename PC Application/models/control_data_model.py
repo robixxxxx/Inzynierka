@@ -8,7 +8,7 @@ class ControlDataModel:
         self.steering = 0.0
         self.throttle = 0.0
         self.brake = 0.0
-        self.functions = [0] * 8 # 0: ligts, 1:horn, 2-7: not used
+        self.functions = [0] * 8 # 0: ligts, 1-7: not used
         self.lock = threading.Lock()
 
     def update(self, gear, steering, throttle, brake, functions):

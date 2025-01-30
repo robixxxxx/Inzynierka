@@ -4,7 +4,7 @@ import threading
 import pygame
 import cv2
 import numpy as np
-from models.settings_manager import SettingsManager
+from controllers.settings_manager import SettingsManager
 from models.device_model import DeviceModel
 from models.telemetry_data_model import TelemetryDataModel
 from models.control_data_model import ControlDataModel
@@ -47,12 +47,12 @@ class CommunicationController:
 
     def start_communication(self):
         self.running = True
-        self.send_thread = threading.Thread(target=self.send_loop, daemon=True)
-        self.receive_thread = threading.Thread(target=self.receive_loop, daemon=True)
+        self.send_thread = threading.Thread(target=self._send_loop, daemon=True)
+        self.receive_thread = threading.Thread(target=self._receive_loop, daemon=True)
         self.send_thread.start()
         self.receive_thread.start()
 
-    def send_loop(self):
+    def _send_loop(self):
         try:
             self.control_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.control_connection.connect((self.device.ip, self.device.control_port))
@@ -72,7 +72,7 @@ class CommunicationController:
             if self.control_connection:
                 self.control_connection.close()
 
-    def receive_loop(self):
+    def _receive_loop(self):
         try:
             self.telemetry_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.telemetry_connection.connect((self.device.ip, self.device.telemetry_port))

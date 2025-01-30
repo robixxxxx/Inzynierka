@@ -24,7 +24,6 @@ class DeviceController:
         self.communication_controller = None
 
     def discover_devices(self):
-        """Skanuje sieć w poszukiwaniu urządzeń."""
         print("Skanowanie sieci w poszukiwaniu urządzeń")
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

@@ -29,19 +29,19 @@ class VideoController:
         self.telemetry_data = telemetry_data
         self.control_data = control_data
         self.telemetry_lock = threading.Lock()
-        self.load_wifi_icons()
-        self.load_battery_icons()
+        self._load_wifi_icons()
+        self._load_battery_icons()
         self.smoothed_voltage = None
         self.smoothed_wifi_signal_strength = None
 
-    def load_wifi_icons(self):
+    def _load_wifi_icons(self):
         self.wifi_icons = []
         for i in range(4):
             icon_path = os.path.join("icons", "wifi", f"wifi_{i}.png")
             icon = pygame.image.load(icon_path)
             self.wifi_icons.append(icon)
     
-    def load_battery_icons(self):
+    def _load_battery_icons(self):
         self.battery_icons = []
         for i in range(7):
             icon_path = os.path.join("icons", "battery", f"battery_{i}.png")
@@ -70,10 +70,10 @@ class VideoController:
             self.gear = self.control_data.gear
             self.lights = self.control_data.functions[0]
             self.horn = self.control_data.functions[1]
-            self.smoothed_voltage = self.smooth_value(self.smoothed_voltage, self.voltage)
-            self.smoothed_wifi_signal_strength = self.smooth_value(self.smoothed_wifi_signal_strength, self.wifi_signal_strength)
+            self.smoothed_voltage = self._smooth_value(self.smoothed_voltage, self.voltage)
+            self.smoothed_wifi_signal_strength = self._smooth_value(self.smoothed_wifi_signal_strength, self.wifi_signal_strength)
     
-    def smooth_value(self, smoothed_value, new_value, alpha=0.1):
+    def _smooth_value(self, smoothed_value, new_value, alpha=0.1):
         if smoothed_value is None:
             return new_value
         return alpha * new_value + (1 - alpha) * smoothed_value
@@ -124,13 +124,13 @@ class VideoController:
         icon_bg_surface.set_alpha(128)  # Set transparency level (0-255)
         icon_bg_surface.fill((255, 255, 255))  # Fill with white color
 
-        wifi_icon = self.get_wifi_icon(self.smoothed_wifi_signal_strength)
+        wifi_icon = self._get_wifi_icon(self.smoothed_wifi_signal_strength)
         if wifi_icon:
             self.screen.blit(icon_bg_surface, (10, y_offset))
             self.screen.blit(wifi_icon, (10, y_offset))
             y_offset += wifi_icon.get_height() + 5
 
-        battery_icon = self.get_battery_icon(self.smoothed_voltage)
+        battery_icon = self._get_battery_icon(self.smoothed_voltage)
         if battery_icon:
             self.screen.blit(icon_bg_surface, (10, y_offset))
             self.screen.blit(battery_icon, (10, y_offset))
@@ -167,7 +167,7 @@ class VideoController:
         self.screen.blit(current_text, text_rect)
 
 
-    def get_wifi_icon(self, signal_strength):
+    def _get_wifi_icon(self, signal_strength):
         if signal_strength >= -50:
             return self.wifi_icons[3]
         elif signal_strength >= -60:
@@ -177,7 +177,7 @@ class VideoController:
         else:
             return self.wifi_icons[0]
 
-    def get_battery_icon(self, voltage):
+    def _get_battery_icon(self, voltage):
         if voltage >= 8.4:
             return self.battery_icons[6]
         elif voltage >= 8.0:
