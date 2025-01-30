@@ -1,7 +1,7 @@
 import pygame
 from views.configure_controller_view import ConfigureControllerView
 from controllers.input_handler import InputHandler
-from models.settings_manager import SettingsManager
+from controllers.settings_manager import SettingsManager
 from models.control_data_model import ControlDataModel
 import logidrivepy
 import time
@@ -68,8 +68,6 @@ class ConfigureControllerController:
                                 self._toggle_axis_inversion("throttle")
                             elif self.selected_option == len(self.functions) + 3:
                                 self._toggle_axis_inversion("brake")
-                            elif self.selected_option == len(self.functions) + 4 and self.is_logitech_device:
-                                self._test_force_feedback()
                             elif self.selected_option == len(self.functions) + 5:
                                 running = False
                         elif event.key == pygame.K_ESCAPE:
@@ -134,16 +132,3 @@ class ConfigureControllerController:
             else:
                 mappings[f] = "Nieprzypisane"
         return mappings
-
-    def _test_force_feedback(self):
-        if self.is_logitech_device:
-            try:
-                self.logitech_controller = logidrivepy.LogitechController()
-                self.logitech_controller.steering_initialize()
-                self.logitech_controller.LogiPlaySpringForce(self.settings_manager.selected_controller_index, 0, 50, 40)
-                self.logitech_controller.logi_update()
-                time.sleep(2)
-                self.logitech_controller.steering_shutdown()
-                print("Force feedback test completed.")
-            except Exception as e:
-                print(f"Error testing force feedback: {e}")
