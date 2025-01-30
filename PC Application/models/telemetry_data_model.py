@@ -7,8 +7,6 @@ class TelemetryDataModel:
         self.acceleration_x = 0.0
         self.acceleration_y = 0.0
         self.acceleration_z = 0.0
-        self.battery = 0
-        self.motor_current = 0
         self.voltage = 0.0
         self.current = 0.0
         self.wifi_signal_strength = 0

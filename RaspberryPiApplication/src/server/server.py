@@ -28,7 +28,7 @@ BROADCAST_MSG = json.dumps({
 }).encode('utf-8')
 
 
-class RaspberryPiServer:
+class RCServer:
     def __init__(self):
         self.app = Flask(__name__)
         try:
@@ -150,7 +150,7 @@ class RaspberryPiServer:
                 client_socket, addr = self.control_socket.accept()
                 print(f"Connected to client for control at {addr}")
                 self.client_connected = True
-                self.process_control_client(client_socket)
+                self.process_control_data(client_socket)
             except Exception as e:
                 print(f"Control connection failed: {e}")
             finally:
@@ -174,7 +174,7 @@ class RaspberryPiServer:
                     self.telemetry_socket.close()
                     self.reset_to_broadcast()
 
-    def process_control_client(self, client_socket):
+    def process_control_data(self, client_socket):
         try:
             while self.running:
                 data = client_socket.recv(5)
@@ -183,8 +183,8 @@ class RaspberryPiServer:
                     self.client_connected = False
                     break
 
-                command_type, steering, gas, brake, functions = struct.unpack("bbBBB", data)
-                self.update_control_data(command_type, steering, gas, brake, functions)
+                gear, steering, gas, brake, functions = struct.unpack("bbBBB", data)
+                self.update_control_data(gear, steering, gas, brake, functions)
                 # print(f"Control data updated: {self.control_data}, functions: {functions}")
 
                 self.apply_controls_to_hardware()

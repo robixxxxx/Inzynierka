@@ -44,11 +44,11 @@ class InputHandler:
 
     def update_control_data(self):
         if self.joystick != None:
-            self.pygame_joystick_data()
+            self._pygame_joystick_data()
         else:
-            self.keyboard_data()
+            self._keyboard_data()
 
-    def pygame_joystick_data(self):
+    def _pygame_joystick_data(self):
         pygame.event.pump()
         try:
             steering = self.joystick.get_axis(self.controller_config["steering"]["id"])
@@ -98,7 +98,7 @@ class InputHandler:
 
         self.control_data.update(self.gear, steering, throttle, brake, self.functions)
 
-    def keyboard_data(self):
+    def _keyboard_data(self):
         keys = pygame.key.get_pressed()
         buttons = [0] * 12
         if keys[pygame.K_LEFT]:

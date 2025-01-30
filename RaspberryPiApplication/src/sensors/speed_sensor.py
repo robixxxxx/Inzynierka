@@ -23,6 +23,7 @@ class SpeedSensor:
 
         GPIO.add_event_detect(self.pin_sensor, GPIO.RISING, callback=self._pulse_callback)
 
+    
     def _pulse_callback(self, channel):
         self.pulse_count += 1
 
@@ -36,11 +37,11 @@ class SpeedSensor:
         self.last_time = current_time
         elapsed_time_h = elapsed_time_s / 3600
 
-        # Obliczanie liczby obrotów
+        # Calculating the number of revolutions
         revolutions = self.pulse_count / self.pulses_per_revolution
         self.pulse_count = 0
 
-        # Obliczanie prędkości w m/s
+        # calculation of the speed in km/h
         wheel_circumference_km = self.wheel_circumference_m / 1000
         speed = (revolutions * wheel_circumference_km) / elapsed_time_h
         return speed
